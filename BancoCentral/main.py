@@ -1,12 +1,10 @@
 from bs4 import BeautifulSoup
-import requests
 import datetime
-import time
-from requests_html import HTMLSession
-
+import undetected_chromedriver as uc 
 
 class CurrencyService:
     #This class scrapes the Banco Central web page in order to get UF, USD and EUR prices in CLP in a given date range.
+    driver = uc.Chrome()
     INITIAL_URL = 'https://si3.bcentral.cl/Bdemovil/BDE/IndicadoresDiarios?parentMenuName=Indicadores%20diarios&fecha='
 
     @staticmethod
@@ -26,8 +24,8 @@ class CurrencyService:
     def __scrape_web_page(date):
         #Returns a list contaning the prices in CLP for UF, USD and EUR for a given date.
         url = CurrencyService.INITIAL_URL + date
-        html_text = requests.get(url).text
-        print(html_text)
+        CurrencyService.driver.get(url)
+        html_text = CurrencyService.driver.page_source 
         soup = BeautifulSoup(html_text, 'html5lib')
         uf = soup.find_all('td', class_='col-xs-2 text-center')[0].text
         usd = soup.find_all('td', class_='col-xs-2 text-center')[1].text
@@ -45,18 +43,9 @@ class CurrencyService:
             currencies['uf'].append(uf)
             currencies['usd'].append(usd)
             currencies['eur'].append(eur)
-            time.sleep(1)
         return currencies
 
-#currencies = CurrencyService.currencies('13-09-2022', '18-09-2022') 
-#print(currencies)
+currencies = CurrencyService.currencies('13-11-2022', '18-12-2022') 
+print(currencies)
         
-#x = CurrencyService._CurrencyService__scrape_web_page('14-09-2022')
-#print(x)
-day_one = 'https://si3.bcentral.cl/Bdemovil/BDE/IndicadoresDiarios?parentMenuName=Indicadores%20diarios&fecha=14-09-2022'
-day_two = 'https://si3.bcentral.cl/Bdemovil/BDE/IndicadoresDiarios?parentMenuName=Indicadores%20diarios&fecha=13-09-2022'
 
-session = HTMLSession()
-r = session.get(day_one).text
-r2 = session.get(day_two).text
-print(r == r2)
